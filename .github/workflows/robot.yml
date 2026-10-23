@@ -1,0 +1,53 @@
+name: Surveillance Prix MW4
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verifier_prix_mw4:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer les fichiers
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer le navigateur Playwright avec Cache
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-mw4
+
+      - name: Installer Playwright si absent
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: |
+          pip install playwright requests
+          playwright install chromium --with-deps
+        
+      - name: Installer uniquement les dependances Python si cache actif
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pip install playwright requests
+
+      - name: Lancer le script MW4
+        env:
+          EMAIL_ADRESSE: ${{ secrets.EMAIL_ADRESSE }}
+          EMAIL_MDP: ${{ secrets.EMAIL_MDP }}
+          TELEGRAM_USER: ${{ secrets.TELEGRAM_USER }}
+        run: python mw4_tracker.py
+
+      - name: Sauvegarder la memoire horaire
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git stash || true
+          git pull origin main --rebase || true
+          git stash pop || true
+          git add memoire_mw4.json || true
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Mise a jour memoire MW4" && git push)

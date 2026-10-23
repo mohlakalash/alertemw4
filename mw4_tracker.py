@@ -13,7 +13,7 @@ TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 URL_PRODUIT = "https://www.allkeyshop.com/blog/buy-call-of-duty-modern-warfare-4-steam-account-compare-prices/"
-SEUIL_APPEL = 40.00  # 📞 Votre seuil d'alerte pour MW4
+SEUIL_APPEL = 25.00  # 📞 Votre seuil d'alerte pour MW4
 FICHIER_MEMOIRE = "memoire_mw4.json"
 
 def envoyer_email_recap(prix_min, releves):

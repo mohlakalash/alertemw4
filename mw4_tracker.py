@@ -2,7 +2,6 @@ import os
 import re
 import json
 import smtplib
-import urllib.parse
 import requests
 from datetime import datetime, timezone, timedelta
 from email.message import EmailMessage
@@ -10,10 +9,11 @@ from playwright.sync_api import sync_playwright
 
 EMAIL_ADRESSE = os.environ.get("EMAIL_ADRESSE")
 EMAIL_MDP = os.environ.get("EMAIL_MDP")
-TELEGRAM_USER = os.environ.get("TELEGRAM_USER")
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 URL_PRODUIT = "https://www.allkeyshop.com/blog/buy-call-of-duty-modern-warfare-4-steam-account-compare-prices/"
-SEUIL_APPEL = 30.00  # 📞 Votre seuil d'alerte pour MW4
+SEUIL_APPEL = 40.00  # 📞 Votre seuil d'alerte pour MW4
 FICHIER_MEMOIRE = "memoire_mw4.json"
 
 def envoyer_email_recap(prix_min, releves):
@@ -40,24 +40,26 @@ def envoyer_email_recap(prix_min, releves):
         smtp.send_message(msg)
     print(f"📧 E-mail récapitulatif horaire MW4 envoyé (Min : {prix_min:.2f} €) !")
 
-def passer_appel_telegram(prix):
-    if not TELEGRAM_USER:
-        print("⚠️ TELEGRAM_USER non configuré dans les Secrets.")
+def envoyer_message_telegram(prix, nom_jeu):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("⚠️ TELEGRAM_TOKEN ou TELEGRAM_CHAT_ID manquant dans les Secrets.")
         return
 
-    user = TELEGRAM_USER.strip()
-    if not user.startswith("@"):
-        user = "@" + user
-
-    message = f"Alerte prix ! Le jeu Call of Duty Modern Warfare 4 est descendu à {prix:.2f} euros."
-    texte_encode = urllib.parse.quote(message)
-    url_appel = f"http://api.callmebot.com/start.php?user={user}&text={texte_encode}&lang=fr-FR-Standard-A&rpt=2"
+    message = f"🚨 Alerte prix ! Le jeu {nom_jeu} est descendu à {prix:.2f} euros.\n\nLien direct :\n{URL_PRODUIT}"
+    url_api = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message
+    }
 
     try:
-        requests.get(url_appel, timeout=15)
-        print(f"📞 Appel Telegram déclenché vers {user} !")
+        reponse = requests.post(url_api, json=payload, timeout=15)
+        if reponse.status_code == 200:
+            print(f"📱 Message Telegram officiel envoyé avec succès pour {nom_jeu} !")
+        else:
+            print(f"⚠️ Erreur Telegram : {reponse.text}")
     except Exception as e:
-        print(f"⚠️ Erreur lors de l'appel Telegram : {e}")
+        print(f"⚠️ Erreur lors de l'envoi Telegram : {e}")
 
 def extraire_meilleur_prix():
     with sync_playwright() as p:
@@ -132,8 +134,8 @@ if __name__ == "__main__":
     if prix:
         print(f"✅ Prix MW4 relevé : {prix:.2f} €")
         if prix <= SEUIL_APPEL:
-            print(f"🚨 Seuil atteint ({prix:.2f} € <= {SEUIL_APPEL:.2f} €) ! Appel Telegram immédiat...")
-            passer_appel_telegram(prix)
+            print(f"🚨 Seuil atteint ({prix:.2f} € <= {SEUIL_APPEL:.2f} €) ! Message Telegram immédiat...")
+            envoyer_message_telegram(prix, "Call of Duty Modern Warfare 4")
         gerer_memoire_et_envoi(prix)
     else:
         print("⚠️ Aucun prix détecté sur la page MW4.")

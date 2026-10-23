@@ -39,7 +39,8 @@ jobs:
         env:
           EMAIL_ADRESSE: ${{ secrets.EMAIL_ADRESSE }}
           EMAIL_MDP: ${{ secrets.EMAIL_MDP }}
-          TELEGRAM_USER: ${{ secrets.TELEGRAM_USER }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python mw4_tracker.py
 
       - name: Sauvegarder la memoire horaire

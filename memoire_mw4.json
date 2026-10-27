@@ -1,1 +1,5 @@
+<<<<<<< Updated upstream
 {"heure_ref": "2026-10-27 19:00", "releves": [{"heure": "19:09", "prix": 35.27}, {"heure": "19:11", "prix": 35.27}, {"heure": "19:18", "prix": 35.27}, {"heure": "19:21", "prix": 35.27}, {"heure": "19:26", "prix": 35.27}, {"heure": "19:35", "prix": 35.27}, {"heure": "19:44", "prix": 35.27}]}
+=======
+{"heure_ref": "2026-10-27 19:00", "releves": [{"heure": "19:09", "prix": 35.27}, {"heure": "19:11", "prix": 35.27}, {"heure": "19:18", "prix": 35.27}, {"heure": "19:21", "prix": 35.27}, {"heure": "19:26", "prix": 35.27}, {"heure": "19:35", "prix": 35.27}, {"heure": "19:45", "prix": 35.27}]}
+>>>>>>> Stashed changes
